@@ -13,6 +13,6 @@ pub enum Commands {
     Run {
         /// Source of the file to execute
         #[clap(value_parser)]
-        src: String,
+        path: String,
     },
 }

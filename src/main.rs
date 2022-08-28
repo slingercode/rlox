@@ -1,17 +1,18 @@
+mod cli;
+mod rlox;
+
 use clap::Parser;
 use cli::{Cli, Commands};
-
-mod cli;
 
 fn main() {
     let cli_instance = Cli::parse();
 
     match cli_instance.command {
-        Some(Commands::Run { src }) => {
-            println!("runFile: {}", src);
+        Some(Commands::Run { path }) => {
+            rlox::run_file(path);
         }
         None => {
-            println!("runPrompt");
+            rlox::run_promt().unwrap();
         }
     }
 }
