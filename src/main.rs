@@ -1,5 +1,7 @@
 mod cli;
 mod rlox;
+mod token;
+mod scanner;
 
 use clap::Parser;
 use cli::{Cli, Commands};
