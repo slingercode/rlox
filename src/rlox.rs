@@ -58,7 +58,8 @@ impl Rlox {
         let tokens = scanner_instance.scan_tokens().iter();
 
         for token in tokens {
-            println!("Token {:?}", token.token_type);
+            print!("Token {:?}", token.token_type);
+            print!(" / Literal {}\n", token.literal);
         }
     }
 

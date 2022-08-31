@@ -25,7 +25,7 @@ pub enum Tokens {
 
     // Literals
     // Identifier,
-    // String,
+    String,
     // Number,
 
     // Keywords

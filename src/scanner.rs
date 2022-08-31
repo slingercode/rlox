@@ -60,11 +60,29 @@ impl Scanner<'_> {
             '/' => {
                 if self.char_next_match('/') {
                     while self.peek() != '\n' && !self.is_at_end() {
-                        self.advance()
+                        self.advance();
                     }
                 } else {
                     self.add_token(Tokens::Slash);
                 }
+            },
+            '"' => {
+                while self.peek() != '"' && !self.is_at_end() {
+                    if self.peek() == '\n' { self.line += 1 }
+                    self.advance();
+                }
+                
+                if self.is_at_end() {
+                    self.rlox.error(self.line, "Interminated string\n");
+                    return;
+                }
+                
+                self.advance();
+
+                let text = String::from(&self.source);
+                let literal = &text[(self.start + 1).try_into().unwrap()..self.current.try_into().unwrap()];
+
+                self.add_token_with_literal(Tokens::String, literal.to_string());
             },
             '\n' => self.line += 1,
             ' ' | '\r' | '\t' => {},
@@ -75,8 +93,16 @@ impl Scanner<'_> {
         println!("");
     }
 
+    fn advance(&mut self) {
+        self.current += 1;
+    }
+
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len().try_into().unwrap()
+    }
+
+    fn is_at_end_plus_one(&self) -> bool {
+        (self.current + 1) >= self.source.len().try_into().unwrap()
     }
 
     fn get_current_char(&self) -> char {
@@ -92,7 +118,7 @@ impl Scanner<'_> {
     }
 
     fn char_next_match(&mut self, expected: char) -> bool {
-        if self.is_at_end() {
+        if self.is_at_end_plus_one() {
             return false;
         }
 
@@ -105,12 +131,8 @@ impl Scanner<'_> {
         return true;
     }
 
-    fn advance(&mut self) {
-        self.current += 1;
-    }
-
     fn peek(&self) -> char {
-        if self.is_at_end() {
+        if self.is_at_end_plus_one() {
             return '\0';
         } else {
             return self.get_char_plus_one();
@@ -125,6 +147,18 @@ impl Scanner<'_> {
             token_type: token,
             lexeme: new_text.to_string(),
             literal: String::new(),
+            line: self.line,
+        });
+    }
+
+    fn add_token_with_literal(&mut self, token: Tokens, literal: String) {
+        let text = String::from(&self.source);
+        let new_text = &text[self.start.try_into().unwrap()..self.current.try_into().unwrap()];
+
+        self.tokens.push(Token {
+            token_type: token,
+            lexeme: new_text.to_string(),
+            literal,
             line: self.line,
         });
     }
