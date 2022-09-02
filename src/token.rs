@@ -26,7 +26,7 @@ pub enum Tokens {
     // Literals
     // Identifier,
     String,
-    // Number,
+    Number,
 
     // Keywords
     // And,
@@ -52,6 +52,7 @@ pub struct Token {
     pub token_type: Tokens,
     pub lexeme: String,
     pub literal: String,
+    pub num_literal: f64,
     pub line: u32,
 }
 

@@ -20,6 +20,7 @@ impl Scanner<'_> {
             token_type: Tokens::Eol,
             lexeme: String::new(),
             literal: String::new(),
+            num_literal: 0.0,
             line: self.line,
         });
 
@@ -84,6 +85,21 @@ impl Scanner<'_> {
 
                 self.add_token_with_literal(Tokens::String, literal.to_string());
             },
+            '0'..='9' => {
+                while self.peek().is_numeric() { self.advance(); }
+
+                if self.peek() == '.' && self.peek_plus_one().is_numeric() {
+                    self.advance();
+                    while self.peek().is_numeric() { self.advance(); }
+                } else {
+                    self.advance();
+                }
+
+                let text = String::from(&self.source);
+                let literal = &text[self.start.try_into().unwrap()..self.current.try_into().unwrap()];
+                let number = literal.parse::<f64>().unwrap();
+                self.add_token_with_number_literal(Tokens::Number, number);
+            },
             '\n' => self.line += 1,
             ' ' | '\r' | '\t' => {},
             _ => self.rlox.error(self.line, "Unexpected character"),
@@ -105,6 +121,10 @@ impl Scanner<'_> {
         (self.current + 1) >= self.source.len().try_into().unwrap()
     }
 
+    fn is_at_end_plus_two(&self) -> bool {
+        (self.current + 2) >= self.source.len().try_into().unwrap()
+    }
+
     fn get_current_char(&self) -> char {
         return self.source.chars().nth(
             self.current.try_into().unwrap()
@@ -114,6 +134,12 @@ impl Scanner<'_> {
     fn get_char_plus_one(&self) -> char {
         return self.source.chars().nth(
             (self.current + 1).try_into().unwrap()
+        ).unwrap();
+    }
+
+    fn get_char_plus_two(&self) -> char {
+        return self.source.chars().nth(
+            (self.current + 2).try_into().unwrap()
         ).unwrap();
     }
 
@@ -139,6 +165,14 @@ impl Scanner<'_> {
         }
     }
 
+    fn peek_plus_one(&self) -> char {
+        if self.is_at_end_plus_two() {
+            return '\0';
+        } else {
+            return self.get_char_plus_two();
+        }
+    }
+
     fn add_token(&mut self, token: Tokens) {
         let text = String::from(&self.source);
         let new_text = &text[self.start.try_into().unwrap()..self.current.try_into().unwrap()];
@@ -147,6 +181,7 @@ impl Scanner<'_> {
             token_type: token,
             lexeme: new_text.to_string(),
             literal: String::new(),
+            num_literal: 0.0,
             line: self.line,
         });
     }
@@ -159,6 +194,20 @@ impl Scanner<'_> {
             token_type: token,
             lexeme: new_text.to_string(),
             literal,
+            num_literal: 0.0,
+            line: self.line,
+        });
+    }
+
+    fn add_token_with_number_literal(&mut self, token: Tokens, num_literal: f64) {
+        let text = String::from(&self.source);
+        let new_text = &text[self.start.try_into().unwrap()..self.current.try_into().unwrap()];
+
+        self.tokens.push(Token {
+            token_type: token,
+            lexeme: new_text.to_string(),
+            literal: String::new(),
+            num_literal,
             line: self.line,
         });
     }

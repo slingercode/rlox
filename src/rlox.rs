@@ -59,7 +59,8 @@ impl Rlox {
 
         for token in tokens {
             print!("Token {:?}", token.token_type);
-            print!(" / Literal {}\n", token.literal);
+            print!(" / Literal {}", token.literal);
+            print!(" / Num {}\n", token.num_literal);
         }
     }
 
