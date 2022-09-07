@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{token::{Tokens, Token}, rlox::Rlox};
 
 pub struct Scanner<'a> {
@@ -49,6 +51,7 @@ impl Scanner<'_> {
             '=' => {
                 let token_matched = self.char_next_match('=');
                 self.add_token(if token_matched { Tokens::EqualEqual } else { Tokens::Equal });
+                self.advance();
             },
             '<' => {
                 let token_matched = self.char_next_match('=');
@@ -91,6 +94,7 @@ impl Scanner<'_> {
                 if self.peek() == '.' && self.peek_plus_one().is_numeric() {
                     self.advance();
                     while self.peek().is_numeric() { self.advance(); }
+                    self.advance();
                 } else {
                     self.advance();
                 }
@@ -99,6 +103,43 @@ impl Scanner<'_> {
                 let literal = &text[self.start.try_into().unwrap()..self.current.try_into().unwrap()];
                 let number = literal.parse::<f64>().unwrap();
                 self.add_token_with_number_literal(Tokens::Number, number);
+                return;
+            },
+            'a'..='z' | 'A'..='Z' | '_' => {
+                while self.peek().is_alphanumeric() || self.peek() == '_' { self.advance(); }
+                self.advance();
+
+                let keywords = self.generate_keywords();
+
+                let text = String::from(&self.source);
+                let literal = &text[self.start.try_into().unwrap()..self.current.try_into().unwrap()];
+
+                match keywords.get(literal) {
+                    Some(keyword) => {
+                        match keyword {
+                            Tokens::And => self.add_token(Tokens::And),
+                            Tokens::Class => self.add_token(Tokens::Class),
+                            Tokens::Else => self.add_token(Tokens::Else),
+                            Tokens::False => self.add_token(Tokens::False),
+                            Tokens::Fun => self.add_token(Tokens::Fun),
+                            Tokens::For => self.add_token(Tokens::For),
+                            Tokens::If => self.add_token(Tokens::If),
+                            Tokens::Nil => self.add_token(Tokens::Nil),
+                            Tokens::Or => self.add_token(Tokens::Or),
+                            Tokens::Print => self.add_token(Tokens::Print),
+                            Tokens::Return => self.add_token(Tokens::Return),
+                            Tokens::Super => self.add_token(Tokens::Super),
+                            Tokens::This => self.add_token(Tokens::This),
+                            Tokens::True => self.add_token(Tokens::True),
+                            Tokens::Var => self.add_token(Tokens::Var),
+                            Tokens::While => self.add_token(Tokens::While),
+                            _ => self.add_token_with_literal(Tokens::Identifier, literal.to_string()),
+                        }
+                    },
+                    _ => self.add_token_with_literal(Tokens::Identifier, literal.to_string()),
+                };
+
+                return;
             },
             '\n' => self.line += 1,
             ' ' | '\r' | '\t' => {},
@@ -210,5 +251,28 @@ impl Scanner<'_> {
             num_literal,
             line: self.line,
         });
+    }
+
+    fn generate_keywords(&self) -> HashMap<&str, Tokens>{
+        let mut keywords = HashMap::new();
+
+        keywords.insert("and", Tokens::And);
+        keywords.insert("class", Tokens::Class);
+        keywords.insert("else", Tokens::Else);
+        keywords.insert("false", Tokens::False);
+        keywords.insert("fun", Tokens::Fun);
+        keywords.insert("for", Tokens::For);
+        keywords.insert("if", Tokens::If);
+        keywords.insert("nil", Tokens::Nil);
+        keywords.insert("or", Tokens::Or);
+        keywords.insert("print", Tokens::Print);
+        keywords.insert("return", Tokens::Return);
+        keywords.insert("super", Tokens::Super);
+        keywords.insert("this", Tokens::This);
+        keywords.insert("true", Tokens::True);
+        keywords.insert("var", Tokens::Var);
+        keywords.insert("while", Tokens::While);
+
+        keywords
     }
 }
