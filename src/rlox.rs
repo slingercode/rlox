@@ -1,13 +1,17 @@
 use std::{fs, io::{self, Write}, process};
 
-use crate::scanner;
+use crate::scanner::Scanner;
 
-pub struct Rlox {
-    pub had_error: bool,
+pub(crate) struct Rlox {
+    had_error: bool,
 }
 
 impl Rlox {
-    pub fn run_file(&mut self, path: String) {
+    pub(crate) fn new() -> Self {
+        Self { had_error: false }
+    }
+
+    pub(crate) fn run_file(&mut self, path: String) {
         let content = fs::read_to_string(path)
             .expect("You need to provide a valid source file");
         
@@ -18,7 +22,7 @@ impl Rlox {
         }
     }
 
-    pub fn run_promt(&mut self) -> io::Result<()> {
+    pub(crate) fn run_promt(&mut self) -> io::Result<()> {
         let mut buf = String::new();
         let end_word = String::from("exit");
     
@@ -46,30 +50,23 @@ impl Rlox {
     }
 
     fn run(&mut self, source: String) {
-        let mut scanner_instance = scanner::Scanner {
-            rlox: self,
-            source,
-            tokens: Vec::new(),
-            start: 0,
-            current: 0,
-            line: 1,
-        };
+        let mut scanner_instance = Scanner::new(source);
 
         let tokens = scanner_instance.scan_tokens().iter();
 
         for token in tokens {
             print!("Token {:?}", token.token_type);
-            print!(" / Literal {}", token.literal);
-            print!(" / Num {}\n", token.num_literal);
+            print!(" / Literal \"{}\"", token.literal.string);
+            print!(" / Num {}\n", token.literal.number);
         }
     }
 
-    pub fn error(&mut self, line: u32, message: &str) {
-        self.report(line, "", message);
-    }
+    // pub fn error(&mut self, line: u32, message: &str) {
+    //     self.report(line, "", message);
+    // }
 
-    fn report(&mut self, line: u32, on: &str, message: &str) {
-        println!("[line {}] on {}: {}", line, on, message);
-        self.had_error = true;
-    }
+    // fn report(&mut self, line: u32, on: &str, message: &str) {
+    //     println!("[line {}] on {}: {}", line, on, message);
+    //     self.had_error = true;
+    // }
 }
