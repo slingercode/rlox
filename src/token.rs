@@ -24,6 +24,7 @@ pub enum TokenType {
     LessEqual,
 
     // Literals
+    Number,
     String,
 
     Eof,
@@ -31,7 +32,8 @@ pub enum TokenType {
 
 #[derive(Debug)]
 pub struct Literal {
-    pub string: String,
+    pub number: Option<f64>,
+    pub string: Option<String>,
 }
 
 #[derive(Debug)]

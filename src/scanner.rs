@@ -58,6 +58,7 @@ impl Scanner {
             '<' => self.handle_multiple_token('=', TokenType::LessEqual, TokenType::Less),
             '>' => self.handle_multiple_token('=', TokenType::GreaterEqual, TokenType::Greater),
             '"' => self.handle_string_literal(),
+            '0'..='9' => self.handle_number_literal(),
             '/' => self.handle_slash_token_or_comment(),
             ' ' | '\r' | '\t' => self.handle_whitespace(),
             '\n' => self.handle_line_break(),
@@ -199,10 +200,41 @@ impl Scanner {
 
         self.tokens.push(Token {
             lexeme: String::from(""),
-            token_type: TokenType::String,
             literal: Some(Literal {
-                string: literal.to_string(),
+                number: None,
+                string: Some(literal.to_string()),
             }),
+            token_type: TokenType::String,
+        });
+
+        self.advance();
+    }
+
+    /// **Handler method**
+    ///
+    /// Number literal
+    fn handle_number_literal(&mut self) {
+        while self.get_next_char().is_numeric() {
+            self.advance();
+        }
+
+        if self.get_next_char() == '.' && self.get_char_on_position(self.current + 2).is_numeric() {
+            self.advance();
+
+            while self.get_next_char().is_numeric() {
+                self.advance();
+            }
+        }
+
+        let literal = &self.source[self.start..self.current + 1];
+
+        self.tokens.push(Token {
+            lexeme: String::from(""),
+            literal: Some(Literal {
+                number: Some(literal.parse::<f64>().unwrap_or(0.0)),
+                string: None,
+            }),
+            token_type: TokenType::Number,
         });
 
         self.advance();
