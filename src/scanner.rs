@@ -1,4 +1,4 @@
-use crate::token::{Token, TokenType};
+use crate::token::{Literal, Token, TokenType};
 
 pub struct Scanner {
     /// Current buffer position
@@ -57,9 +57,10 @@ impl Scanner {
             '=' => self.handle_multiple_token('=', TokenType::EqualEqual, TokenType::Equal),
             '<' => self.handle_multiple_token('=', TokenType::LessEqual, TokenType::Less),
             '>' => self.handle_multiple_token('=', TokenType::GreaterEqual, TokenType::Greater),
+            '"' => self.handle_string_literal(),
             '/' => self.handle_slash_token_or_comment(),
-            ' ' | '\r' | '\t' => self.handle_whitespace_token(),
-            '\n' => self.handle_line_break_token(),
+            ' ' | '\r' | '\t' => self.handle_whitespace(),
+            '\n' => self.handle_line_break(),
             _ => self.handle_error(current_char),
         }
     }
@@ -81,12 +82,14 @@ impl Scanner {
     }
 
     /// **Build for simplicity**
+    ///
     /// Gets the char in the current position
     fn get_current_char(&self) -> char {
         self.get_char_on_position(self.current)
     }
 
     /// **Build for simplicity**
+    ///
     /// Gets the char in the next position
     fn get_next_char(&self) -> char {
         self.get_char_on_position(self.current + 1)
@@ -107,8 +110,8 @@ impl Scanner {
 
     /// Create the lexeme of a new `Token` founded
     fn create_lexeme(&self) -> String {
-        let literal = &self.source[self.start..self.current + 1];
-        literal.to_string()
+        let lexeme = &self.source[self.start..self.current + 1];
+        lexeme.to_string()
     }
 
     /// Create a new `Token` in the vector
@@ -116,31 +119,36 @@ impl Scanner {
         if self.is_eof() {
             self.tokens.push(Token {
                 lexeme: String::from("\0"),
+                literal: None,
                 token_type,
             })
         } else {
             self.tokens.push(Token {
                 lexeme: self.create_lexeme(),
+                literal: None,
                 token_type,
             })
         }
     }
 
     /// **Handler method**
+    ///
     /// Whitespace
-    fn handle_whitespace_token(&mut self) {
+    fn handle_whitespace(&mut self) {
         self.advance();
     }
 
     /// **Handler method**
+    ///
     /// Line break
-    fn handle_line_break_token(&mut self) {
+    fn handle_line_break(&mut self) {
         self.line += 1;
         self.line_block = 0;
         self.advance();
     }
 
     /// **Handler method**
+    ///
     /// Single token
     fn handle_single_token(&mut self, token_type: TokenType) {
         self.create_token(token_type);
@@ -148,6 +156,7 @@ impl Scanner {
     }
 
     /// **Handler method**
+    ///
     /// Multiple token
     fn handle_multiple_token(
         &mut self,
@@ -167,6 +176,40 @@ impl Scanner {
     }
 
     /// **Handler method**
+    ///
+    /// String literal
+    fn handle_string_literal(&mut self) {
+        while !self.is_eof() && self.get_next_char() != '"' {
+            if self.get_next_char() == '\n' {
+                self.handle_line_break();
+            } else {
+                self.advance();
+            }
+        }
+
+        if self.is_eof() {
+            self.handle_error('\0');
+            return;
+        }
+
+        // This is the char `"`
+        self.advance();
+
+        let literal = &self.source[self.start + 1..self.current];
+
+        self.tokens.push(Token {
+            lexeme: String::from(""),
+            token_type: TokenType::String,
+            literal: Some(Literal {
+                string: literal.to_string(),
+            }),
+        });
+
+        self.advance();
+    }
+
+    /// **Handler method**
+    ///
     /// Comment token
     fn handle_slash_token_or_comment(&mut self) {
         if self.get_next_char() == '/' {
@@ -184,6 +227,7 @@ impl Scanner {
     }
 
     /// **Handler method**
+    ///
     /// Error
     fn handle_error(&mut self, char: char) {
         eprintln!(

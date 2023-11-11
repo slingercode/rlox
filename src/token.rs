@@ -23,11 +23,20 @@ pub enum TokenType {
     Less,
     LessEqual,
 
+    // Literals
+    String,
+
     Eof,
+}
+
+#[derive(Debug)]
+pub struct Literal {
+    pub string: String,
 }
 
 #[derive(Debug)]
 pub struct Token {
     pub lexeme: String,
+    pub literal: Option<Literal>,
     pub token_type: TokenType,
 }

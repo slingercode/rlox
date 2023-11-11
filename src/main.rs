@@ -12,7 +12,7 @@ fn run(source: String) {
     println!("");
 
     for token in tokens {
-        println!("Token: {:?}", token)
+        println!("{:?}", token)
     }
 }
 
