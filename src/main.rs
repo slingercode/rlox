@@ -1,22 +1,27 @@
-mod cli;
-mod rlox;
-mod token;
 mod scanner;
+mod token;
 
-use clap::Parser;
-use cli::{Cli, Commands};
-use rlox::Rlox;
+use std::{fs::File, io::prelude::Read, path::Path};
+
+use scanner::Scanner;
+
+fn run(source: String) {
+    let scanner = Scanner::new(source);
+    let tokens = scanner.scan_tokens();
+
+    println!("");
+
+    for token in tokens {
+        println!("Token: {:?}", token)
+    }
+}
 
 fn main() {
-    let cli_instance = Cli::parse();
-    let mut rlox_instance = Rlox::new();
+    let mut raw_src = String::new();
 
-    match cli_instance.command {
-        Some(Commands::Run { path }) => {
-            rlox_instance.run_file(path);
-        }
-        None => {
-            rlox_instance.run_promt().unwrap();
-        }
-    }
+    File::open(Path::new("./lox-demo/main.lox"))
+        .and_then(|mut file| file.read_to_string(&mut raw_src))
+        .expect("Could not read file");
+
+    run(raw_src)
 }

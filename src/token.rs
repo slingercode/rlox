@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub(crate) enum Tokens {
+pub enum TokenType {
     // Single character tokens
     LeftParen,
     RightParen,
@@ -23,46 +23,11 @@ pub(crate) enum Tokens {
     Less,
     LessEqual,
 
-    // Literals
-    Identifier,
-    String,
-    Number,
-
-    // Keywords
-    And,
-    Class,
-    Else,
-    False,
-    Fun,
-    For,
-    If,
-    Nil,
-    Or,
-    Print,
-    Return,
-    Super,
-    This,
-    True,
-    Var,
-    While,
-    Eol,
+    Eof,
 }
 
-pub(crate) struct Token {
-    pub(crate) token_type: Tokens,
-    pub(crate) literal: Literal,
-}
-
-pub (crate) struct Literal {
-    pub(crate) string: String,
-    pub(crate) number: f64,
-}
-
-impl Literal {
-    pub(crate) fn void() -> Self {
-        Self {
-            string: String::new(),
-            number: 0.0,
-        }
-    }
+#[derive(Debug)]
+pub struct Token {
+    pub lexeme: String,
+    pub token_type: TokenType,
 }
