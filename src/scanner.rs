@@ -59,6 +59,7 @@ impl Scanner {
             '>' => self.handle_multiple_token('=', TokenType::GreaterEqual, TokenType::Greater),
             '"' => self.handle_string_literal(),
             '0'..='9' => self.handle_number_literal(),
+            'a'..='z' | 'A'..='Z' | '_' => self.handle_keyword(),
             '/' => self.handle_slash_token_or_comment(),
             ' ' | '\r' | '\t' => self.handle_whitespace(),
             '\n' => self.handle_line_break(),
@@ -236,6 +237,39 @@ impl Scanner {
             }),
             token_type: TokenType::Number,
         });
+
+        self.advance();
+    }
+
+    /// **Handler method**
+    ///
+    /// Keywords (reserved words or identifiers)
+    fn handle_keyword(&mut self) {
+        while self.get_next_char().is_alphanumeric() {
+            self.advance();
+        }
+
+        let text = &self.source[self.start..self.current + 1];
+
+        match text {
+            "and" => self.create_token(TokenType::And),
+            "class" => self.create_token(TokenType::Class),
+            "else" => self.create_token(TokenType::Else),
+            "false" => self.create_token(TokenType::False),
+            "for" => self.create_token(TokenType::For),
+            "fun" => self.create_token(TokenType::Fun),
+            "if" => self.create_token(TokenType::If),
+            "nil" => self.create_token(TokenType::Nil),
+            "or" => self.create_token(TokenType::Or),
+            "print" => self.create_token(TokenType::Print),
+            "return" => self.create_token(TokenType::Return),
+            "super" => self.create_token(TokenType::Super),
+            "this" => self.create_token(TokenType::This),
+            "true" => self.create_token(TokenType::True),
+            "var" => self.create_token(TokenType::Var),
+            "while" => self.create_token(TokenType::While),
+            _ => self.create_token(TokenType::Identifier),
+        }
 
         self.advance();
     }

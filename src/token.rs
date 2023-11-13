@@ -1,14 +1,14 @@
 #[derive(Debug)]
 pub enum TokenType {
     // Single character tokens
-    LeftParen,
-    RightParen,
-    LeftBrace,
-    RightBrace,
     Comma,
     Dot,
+    LeftBrace,
+    LeftParen,
     Minus,
     Plus,
+    RightBrace,
+    RightParen,
     Semicolon,
     Slash,
     Star,
@@ -24,8 +24,27 @@ pub enum TokenType {
     LessEqual,
 
     // Literals
+    Identifier,
     Number,
     String,
+
+    // Keywords
+    And,
+    Class,
+    Else,
+    False,
+    For,
+    Fun,
+    If,
+    Nil,
+    Or,
+    Print,
+    Return,
+    Super,
+    This,
+    True,
+    Var,
+    While,
 
     Eof,
 }
