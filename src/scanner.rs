@@ -245,7 +245,7 @@ impl Scanner {
     ///
     /// Keywords (reserved words or identifiers)
     fn handle_keyword(&mut self) {
-        while self.get_next_char().is_alphanumeric() {
+        while self.get_next_char().is_alphanumeric() || self.get_next_char() == '_' {
             self.advance();
         }
 
